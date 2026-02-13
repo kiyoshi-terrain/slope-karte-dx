@@ -12,6 +12,9 @@
   <link rel="apple-touch-icon" href="icon-192.png">
   
   <title>SlopeKarte</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx-populate@1.21.0/browser/xlsx-populate.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
@@ -24,9 +27,9 @@
     }
     
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Hiragino Sans', sans-serif;
-      background: #0f1a14;
-      color: #eee;
+      font-family: 'Inter', 'Noto Sans JP', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Hiragino Sans', sans-serif;
+      background: #0f172a;
+      color: #f1f5f9;
       min-height: 100vh;
       min-height: -webkit-fill-available;
       padding-bottom: env(safe-area-inset-bottom);
@@ -46,7 +49,8 @@
       position: sticky;
       top: 0;
       z-index: 100;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     }
 
     .header-brand {
@@ -72,7 +76,7 @@
     .header h1 {
       font-size: 15px;
       font-weight: 600;
-      letter-spacing: 1px;
+      letter-spacing: 0.5px;
       color: rgba(255,255,255,0.95);
       white-space: nowrap;
     }
@@ -83,24 +87,32 @@
     }
     
     .btn {
-      background: rgba(255,255,255,0.2);
-      border: none;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.08);
       color: white;
-      padding: 8px 14px;
-      border-radius: 8px;
+      padding: 8px 16px;
+      border-radius: 10px;
       font-size: 14px;
+      font-weight: 500;
       cursor: pointer;
       transition: all 0.2s;
       -webkit-appearance: none;
     }
-    
+
     .btn:active {
       transform: scale(0.95);
-      background: rgba(255,255,255,0.3);
+      background: rgba(255,255,255,0.18);
     }
-    
+
     .btn-primary {
       background: #00a84f;
+      border-color: rgba(0, 168, 79, 0.3);
+      box-shadow: 0 2px 8px rgba(0, 168, 79, 0.25);
+    }
+
+    .btn-primary:active {
+      background: #009544;
+      box-shadow: 0 1px 4px rgba(0, 168, 79, 0.15);
     }
     
     .container {
@@ -122,34 +134,40 @@
     }
     
     .file-drop-zone {
-      border: 3px dashed #00a84f;
-      border-radius: 20px;
+      border: 2px dashed rgba(0, 168, 79, 0.4);
+      border-radius: 24px;
       padding: 50px 30px;
-      background: rgba(0, 165, 80, 0.1);
+      background: rgba(0, 168, 79, 0.06);
       cursor: pointer;
       transition: all 0.3s;
       max-width: 400px;
       width: 100%;
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
     }
-    
+
     .file-drop-zone:active {
-      background: rgba(0, 165, 80, 0.2);
+      background: rgba(0, 168, 79, 0.12);
+      border-color: rgba(0, 168, 79, 0.6);
       transform: scale(0.98);
     }
-    
+
     .file-icon {
       font-size: 56px;
       margin-bottom: 16px;
     }
-    
+
     .file-drop-zone h2 {
       font-size: 18px;
+      font-weight: 600;
       margin-bottom: 8px;
+      color: #f1f5f9;
     }
-    
+
     .file-drop-zone p {
-      color: #aaa;
+      color: #94a3b8;
       font-size: 14px;
+      line-height: 1.6;
     }
     
     #file-input {
@@ -172,25 +190,28 @@
     }
     
     .sheet-tab {
-      background: rgba(255,255,255,0.1);
-      border: none;
-      color: #ccc;
-      padding: 8px 14px;
-      border-radius: 8px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.05);
+      color: #94a3b8;
+      padding: 8px 16px;
+      border-radius: 10px;
       font-size: 13px;
+      font-weight: 500;
       cursor: pointer;
       white-space: nowrap;
       transition: all 0.2s;
       flex-shrink: 0;
     }
-    
+
     .sheet-tab:active {
       transform: scale(0.95);
     }
-    
+
     .sheet-tab.active {
       background: #00a84f;
       color: white;
+      border-color: transparent;
+      box-shadow: 0 2px 8px rgba(0, 168, 79, 0.3);
     }
     
     /* 写真グリッド */
@@ -207,10 +228,12 @@
     }
     
     .photo-card {
-      background: #1a2b20;
-      border-radius: 12px;
+      background: #1e293b;
+      border-radius: 16px;
       overflow: hidden;
       transition: all 0.2s;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.2);
     }
     
     .photo-card.is-dummy {
@@ -224,7 +247,7 @@
     
     .photo-frame {
       aspect-ratio: 4/3;
-      background: #0f1a14;
+      background: #0f172a;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -247,7 +270,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      color: #666;
+      color: #64748b;
     }
     
     .photo-frame .placeholder-icon {
@@ -259,16 +282,18 @@
       position: absolute;
       top: 8px;
       left: 8px;
-      background: rgba(0,0,0,0.7);
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
       color: white;
       padding: 4px 10px;
-      border-radius: 4px;
-      font-size: 13px;
-      font-weight: bold;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
     }
-    
+
     .photo-label.dummy {
-      background: #00a84f;
+      background: rgba(0, 168, 79, 0.85);
     }
     
     .photo-info {
@@ -283,25 +308,27 @@
     
     .comment-input {
       width: 100%;
-      background: #0f1a14;
-      border: 1px solid #444;
-      border-radius: 8px;
-      color: #eee;
-      padding: 10px;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      color: #f1f5f9;
+      padding: 10px 12px;
       font-size: 14px;
       resize: vertical;
       min-height: 80px;
       font-family: inherit;
       line-height: 1.5;
+      transition: border-color 0.2s, box-shadow 0.2s;
     }
-    
+
     .comment-input:focus {
       outline: none;
       border-color: #00a84f;
+      box-shadow: 0 0 0 3px rgba(0, 168, 79, 0.15);
     }
     
     .comment-input::placeholder {
-      color: #666;
+      color: #64748b;
     }
     
     /* アクションシート */
@@ -312,7 +339,9 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(0,0,0,0.5);
+      background: rgba(0,0,0,0.4);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
       z-index: 999;
     }
     
@@ -326,11 +355,13 @@
       bottom: 0;
       left: 0;
       right: 0;
-      background: #1a2b20;
-      border-radius: 16px 16px 0 0;
+      background: #1e293b;
+      border-radius: 20px 20px 0 0;
       padding: 20px;
       padding-bottom: calc(20px + env(safe-area-inset-bottom));
       z-index: 1000;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.4);
     }
     
     .action-sheet.active {
@@ -339,7 +370,7 @@
     
     .action-sheet h3 {
       font-size: 14px;
-      color: #888;
+      color: #94a3b8;
       text-align: center;
       margin-bottom: 16px;
     }
@@ -347,21 +378,24 @@
     .action-btn {
       width: 100%;
       padding: 16px;
-      border: none;
-      background: #243d2c;
-      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      background: #334155;
+      color: #f1f5f9;
       font-size: 16px;
-      border-radius: 12px;
+      font-weight: 500;
+      border-radius: 14px;
       margin-bottom: 10px;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 10px;
+      transition: all 0.15s;
     }
     
     .action-btn:active {
-      background: #2f5038;
+      background: #475569;
+      transform: scale(0.98);
     }
     
     .action-btn-cancel {
@@ -375,7 +409,10 @@
       bottom: 0;
       left: 0;
       right: 0;
-      background: #1a2b20;
+      background: #1e293b;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
       padding: 10px 16px;
       padding-bottom: calc(10px + env(safe-area-inset-bottom));
       display: none;
@@ -393,7 +430,7 @@
     }
     
     .status-bar .info {
-      color: #aaa;
+      color: #94a3b8;
       font-size: 12px;
     }
     
@@ -405,34 +442,37 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(0,0,0,0.8);
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
       z-index: 2000;
       align-items: center;
       justify-content: center;
       flex-direction: column;
     }
-    
+
     .loading.active {
       display: flex;
     }
-    
+
     .spinner {
       width: 44px;
       height: 44px;
-      border: 4px solid #333;
+      border: 3px solid rgba(255, 255, 255, 0.1);
       border-top-color: #00a84f;
       border-radius: 50%;
-      animation: spin 1s linear infinite;
+      animation: spin 0.8s linear infinite;
     }
-    
+
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
-    
+
     .loading p {
       margin-top: 16px;
-      color: #aaa;
+      color: #94a3b8;
       font-size: 14px;
+      font-weight: 500;
     }
     
     /* 写真入力 */
@@ -444,13 +484,15 @@
     
     /* 現在のファイル情報 */
     .current-file {
-      background: #1a2b20;
-      border-radius: 12px;
+      background: #1e293b;
+      border-radius: 16px;
       padding: 12px 16px;
       margin-bottom: 16px;
       display: flex;
       align-items: center;
       gap: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
     }
     
     .current-file-icon {
@@ -468,7 +510,7 @@
     
     .current-file-path {
       font-size: 12px;
-      color: #888;
+      color: #94a3b8;
     }
     
     /* 統計情報 */
@@ -477,14 +519,17 @@
       gap: 16px;
       margin-bottom: 16px;
       font-size: 13px;
-      color: #aaa;
+      color: #94a3b8;
       flex-wrap: wrap;
     }
     
     .stats span {
-      background: rgba(255,255,255,0.1);
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.05);
       padding: 6px 12px;
-      border-radius: 6px;
+      border-radius: 8px;
+      font-weight: 500;
+      color: #94a3b8;
     }
 
     /* PIN認証画面 */
@@ -494,7 +539,11 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: #0f1a14;
+      background:
+        radial-gradient(ellipse at 20% 80%, rgba(0, 107, 63, 0.15) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 20%, rgba(0, 168, 79, 0.1) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(16, 185, 129, 0.05) 0%, transparent 70%),
+        linear-gradient(180deg, #0c1220 0%, #0f172a 50%, #111827 100%);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -507,6 +556,21 @@
 
     .pin-screen.hidden {
       display: none;
+    }
+
+    .pin-glass-panel {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 24px;
+      padding: 40px 32px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      max-width: 360px;
+      width: 100%;
     }
 
     .pin-lock-icon {
@@ -523,7 +587,7 @@
 
     .pin-subtitle {
       font-size: 14px;
-      color: #aaa;
+      color: #94a3b8;
       margin-bottom: 24px;
       text-align: center;
     }
@@ -580,11 +644,11 @@
       width: 72px;
       height: 72px;
       border-radius: 50%;
-      border: 1px solid rgba(255,255,255,0.2);
-      background: rgba(255,255,255,0.08);
-      color: #fff;
-      font-size: 28px;
-      font-weight: 300;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.06);
+      color: #f1f5f9;
+      font-size: 26px;
+      font-weight: 400;
       cursor: pointer;
       display: flex;
       align-items: center;
@@ -593,11 +657,14 @@
       -webkit-appearance: none;
       user-select: none;
       -webkit-user-select: none;
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
     }
 
     .pin-key:active {
-      background: rgba(0, 165, 80, 0.4);
-      transform: scale(0.95);
+      background: rgba(0, 168, 79, 0.35);
+      transform: scale(0.92);
+      border-color: rgba(0, 168, 79, 0.5);
     }
 
     .pin-key.fn {
@@ -630,31 +697,33 @@
 <body>
   <!-- PIN認証画面 -->
   <div class="pin-screen" id="pin-screen">
-    <div class="pin-lock-icon">🔒</div>
-    <div class="pin-title" id="pin-title">PINを設定してください</div>
-    <div class="pin-subtitle" id="pin-subtitle">4桁の数字を入力</div>
-    <div class="pin-error" id="pin-error">&nbsp;</div>
-    <div class="pin-dots">
-      <div class="pin-dot" id="pin-dot-0"></div>
-      <div class="pin-dot" id="pin-dot-1"></div>
-      <div class="pin-dot" id="pin-dot-2"></div>
-      <div class="pin-dot" id="pin-dot-3"></div>
+    <div class="pin-glass-panel">
+      <div class="pin-lock-icon">🔒</div>
+      <div class="pin-title" id="pin-title">PINを設定してください</div>
+      <div class="pin-subtitle" id="pin-subtitle">4桁の数字を入力</div>
+      <div class="pin-error" id="pin-error">&nbsp;</div>
+      <div class="pin-dots">
+        <div class="pin-dot" id="pin-dot-0"></div>
+        <div class="pin-dot" id="pin-dot-1"></div>
+        <div class="pin-dot" id="pin-dot-2"></div>
+        <div class="pin-dot" id="pin-dot-3"></div>
+      </div>
+      <div class="pin-keypad">
+        <button class="pin-key" onclick="pinInput('1')">1</button>
+        <button class="pin-key" onclick="pinInput('2')">2</button>
+        <button class="pin-key" onclick="pinInput('3')">3</button>
+        <button class="pin-key" onclick="pinInput('4')">4</button>
+        <button class="pin-key" onclick="pinInput('5')">5</button>
+        <button class="pin-key" onclick="pinInput('6')">6</button>
+        <button class="pin-key" onclick="pinInput('7')">7</button>
+        <button class="pin-key" onclick="pinInput('8')">8</button>
+        <button class="pin-key" onclick="pinInput('9')">9</button>
+        <button class="pin-key fn" onclick="pinClear()">CLR</button>
+        <button class="pin-key" onclick="pinInput('0')">0</button>
+        <button class="pin-key fn" onclick="pinBackspace()">⌫</button>
+      </div>
+      <button class="pin-reset" id="pin-reset-btn" onclick="pinReset()" style="display:none;">PINをリセット</button>
     </div>
-    <div class="pin-keypad">
-      <button class="pin-key" onclick="pinInput('1')">1</button>
-      <button class="pin-key" onclick="pinInput('2')">2</button>
-      <button class="pin-key" onclick="pinInput('3')">3</button>
-      <button class="pin-key" onclick="pinInput('4')">4</button>
-      <button class="pin-key" onclick="pinInput('5')">5</button>
-      <button class="pin-key" onclick="pinInput('6')">6</button>
-      <button class="pin-key" onclick="pinInput('7')">7</button>
-      <button class="pin-key" onclick="pinInput('8')">8</button>
-      <button class="pin-key" onclick="pinInput('9')">9</button>
-      <button class="pin-key fn" onclick="pinClear()">CLR</button>
-      <button class="pin-key" onclick="pinInput('0')">0</button>
-      <button class="pin-key fn" onclick="pinBackspace()">⌫</button>
-    </div>
-    <button class="pin-reset" id="pin-reset-btn" onclick="pinReset()" style="display:none;">PINをリセット</button>
   </div>
 
   <!-- ヘッダー -->
@@ -1523,7 +1592,7 @@
     function renderGenericSheet(sheet) {
       document.getElementById('stats').innerHTML = '';
       photoGrid.innerHTML = `
-        <div style="text-align: center; padding: 40px; color: #888;">
+        <div style="text-align: center; padding: 40px; color: #94a3b8;">
           <p style="font-size: 48px; margin-bottom: 20px;">📄</p>
           <h3>${sheet.name}</h3>
           <p style="margin-top: 10px;">このシートは閲覧モードです</p>
