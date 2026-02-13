@@ -6,7 +6,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="SlopeKarte">
-  <meta name="theme-color" content="#007934">
+  <meta name="theme-color" content="#006B3F">
   
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon-192.png">
@@ -37,28 +37,40 @@
     }
     
     .header {
-      background: linear-gradient(135deg, #007934 0%, #005a27 100%);
-      padding: 12px 16px;
-      padding-top: calc(12px + env(safe-area-inset-top));
+      background: linear-gradient(135deg, #006B3F 0%, #004D2C 60%, #007934 100%);
+      padding: 10px 16px;
+      padding-top: calc(10px + env(safe-area-inset-top));
       display: flex;
       align-items: center;
       justify-content: space-between;
       position: sticky;
       top: 0;
       z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+
+    .header-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header-logo-mark {
+      font-size: 20px;
+      font-weight: bold;
+      letter-spacing: 1px;
+      color: rgba(255,255,255,0.95);
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      border-right: 1px solid rgba(255,255,255,0.3);
+      padding-right: 12px;
+      line-height: 1;
     }
 
     .header h1 {
-      font-size: 17px;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .header-logo {
-      height: 22px;
-      opacity: 0.9;
+      font-size: 16px;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      color: rgba(255,255,255,0.95);
     }
     
     .header-actions {
@@ -84,7 +96,7 @@
     }
     
     .btn-primary {
-      background: #00a550;
+      background: #00a84f;
     }
     
     .container {
@@ -106,7 +118,7 @@
     }
     
     .file-drop-zone {
-      border: 3px dashed #00a550;
+      border: 3px dashed #00a84f;
       border-radius: 20px;
       padding: 50px 30px;
       background: rgba(0, 165, 80, 0.1);
@@ -173,7 +185,7 @@
     }
     
     .sheet-tab.active {
-      background: #00a550;
+      background: #00a84f;
       color: white;
     }
     
@@ -198,7 +210,7 @@
     }
     
     .photo-card.is-dummy {
-      border: 2px dashed #00a550;
+      border: 2px dashed #00a84f;
       opacity: 0.8;
     }
     
@@ -252,7 +264,7 @@
     }
     
     .photo-label.dummy {
-      background: #00a550;
+      background: #00a84f;
     }
     
     .photo-info {
@@ -261,7 +273,7 @@
     
     .photo-info h3 {
       font-size: 13px;
-      color: #00a550;
+      color: #00a84f;
       margin-bottom: 6px;
     }
     
@@ -281,7 +293,7 @@
     
     .comment-input:focus {
       outline: none;
-      border-color: #00a550;
+      border-color: #00a84f;
     }
     
     .comment-input::placeholder {
@@ -373,7 +385,7 @@
     }
     
     .status-bar .status {
-      color: #00a550;
+      color: #00a84f;
     }
     
     .status-bar .info {
@@ -404,7 +416,7 @@
       width: 44px;
       height: 44px;
       border: 4px solid #333;
-      border-top-color: #00a550;
+      border-top-color: #00a84f;
       border-radius: 50%;
       animation: spin 1s linear infinite;
     }
@@ -530,13 +542,13 @@
       width: 16px;
       height: 16px;
       border-radius: 50%;
-      border: 2px solid #00a550;
+      border: 2px solid #00a84f;
       background: transparent;
       transition: all 0.15s;
     }
 
     .pin-dot.filled {
-      background: #00a550;
+      background: #00a84f;
       transform: scale(1.1);
     }
 
@@ -597,7 +609,7 @@
 
     .pin-reset {
       margin-top: 32px;
-      color: #00a550;
+      color: #00a84f;
       font-size: 13px;
       background: none;
       border: none;
@@ -643,7 +655,10 @@
 
   <!-- ヘッダー -->
   <header class="header">
-    <h1><svg class="header-logo" viewBox="0 0 120 40" fill="white"><text x="0" y="28" font-size="26" font-weight="bold" font-family="Arial, sans-serif">JRSE</text></svg> SlopeKarte</h1>
+    <div class="header-brand">
+      <span class="header-logo-mark">JRSE</span>
+      <h1>SlopeKarte</h1>
+    </div>
     <div class="header-actions" id="header-actions" style="display: none;">
       <button class="btn" onclick="closeFile()">閉じる</button>
       <button class="btn btn-primary" onclick="saveFile()">🔒 保存</button>
