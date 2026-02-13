@@ -1,0 +1,20 @@
+# Node
+node_modules/
+package-lock.json
+
+# Excel files (sensitive data)
+*.xlsx
+*.pdf
+
+# Test files
+_test_*
+
+# Archives
+*.zip
+
+# Old prototypes
+slope-karte-pwa/
+slope_karte_dx_proto*.html
+
+# OS
+.DS_Store

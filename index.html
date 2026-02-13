@@ -1,0 +1,1843 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="斜面カルテ">
+  <meta name="theme-color" content="#667eea">
+  
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  
+  <title>斜面カルテ DX</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx-populate@1.21.0/browser/xlsx-populate.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Hiragino Sans', sans-serif;
+      background: #1a1a2e;
+      color: #eee;
+      min-height: 100vh;
+      min-height: -webkit-fill-available;
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+    
+    html {
+      height: -webkit-fill-available;
+    }
+    
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 12px 16px;
+      padding-top: calc(12px + env(safe-area-inset-top));
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    
+    .header h1 {
+      font-size: 17px;
+      font-weight: 600;
+    }
+    
+    .header-actions {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .btn {
+      background: rgba(255,255,255,0.2);
+      border: none;
+      color: white;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      -webkit-appearance: none;
+    }
+    
+    .btn:active {
+      transform: scale(0.95);
+      background: rgba(255,255,255,0.3);
+    }
+    
+    .btn-primary {
+      background: #4CAF50;
+    }
+    
+    .container {
+      padding: 16px;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding-bottom: 80px;
+    }
+    
+    /* ファイル選択画面 */
+    .file-select {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 70vh;
+      text-align: center;
+      padding: 20px;
+    }
+    
+    .file-drop-zone {
+      border: 3px dashed #667eea;
+      border-radius: 20px;
+      padding: 50px 30px;
+      background: rgba(102, 126, 234, 0.1);
+      cursor: pointer;
+      transition: all 0.3s;
+      max-width: 400px;
+      width: 100%;
+    }
+    
+    .file-drop-zone:active {
+      background: rgba(102, 126, 234, 0.2);
+      transform: scale(0.98);
+    }
+    
+    .file-icon {
+      font-size: 56px;
+      margin-bottom: 16px;
+    }
+    
+    .file-drop-zone h2 {
+      font-size: 18px;
+      margin-bottom: 8px;
+    }
+    
+    .file-drop-zone p {
+      color: #aaa;
+      font-size: 14px;
+    }
+    
+    #file-input {
+      display: none;
+    }
+    
+    /* シート選択タブ */
+    .sheet-tabs {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding: 12px 0;
+      margin-bottom: 16px;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    
+    .sheet-tabs::-webkit-scrollbar {
+      display: none;
+    }
+    
+    .sheet-tab {
+      background: rgba(255,255,255,0.1);
+      border: none;
+      color: #ccc;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+    
+    .sheet-tab:active {
+      transform: scale(0.95);
+    }
+    
+    .sheet-tab.active {
+      background: #667eea;
+      color: white;
+    }
+    
+    /* 写真グリッド */
+    .photo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
+    }
+    
+    @media (max-width: 600px) {
+      .photo-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    .photo-card {
+      background: #2a2a4a;
+      border-radius: 12px;
+      overflow: hidden;
+      transition: all 0.2s;
+    }
+    
+    .photo-card.is-dummy {
+      border: 2px dashed #667eea;
+      opacity: 0.8;
+    }
+    
+    .photo-card.is-dummy:hover {
+      opacity: 1;
+    }
+    
+    .photo-frame {
+      aspect-ratio: 4/3;
+      background: #1a1a2e;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .photo-frame:active {
+      opacity: 0.8;
+    }
+    
+    .photo-frame img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .photo-frame .placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: #666;
+    }
+    
+    .photo-frame .placeholder-icon {
+      font-size: 40px;
+      margin-bottom: 8px;
+    }
+    
+    .photo-label {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      background: rgba(0,0,0,0.7);
+      color: white;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 13px;
+      font-weight: bold;
+    }
+    
+    .photo-label.dummy {
+      background: #667eea;
+    }
+    
+    .photo-info {
+      padding: 12px;
+    }
+    
+    .photo-info h3 {
+      font-size: 13px;
+      color: #667eea;
+      margin-bottom: 6px;
+    }
+    
+    .comment-input {
+      width: 100%;
+      background: #1a1a2e;
+      border: 1px solid #444;
+      border-radius: 8px;
+      color: #eee;
+      padding: 10px;
+      font-size: 14px;
+      resize: vertical;
+      min-height: 80px;
+      font-family: inherit;
+      line-height: 1.5;
+    }
+    
+    .comment-input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    
+    .comment-input::placeholder {
+      color: #666;
+    }
+    
+    /* アクションシート */
+    .action-sheet-backdrop {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 999;
+    }
+    
+    .action-sheet-backdrop.active {
+      display: block;
+    }
+    
+    .action-sheet {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #2a2a4a;
+      border-radius: 16px 16px 0 0;
+      padding: 20px;
+      padding-bottom: calc(20px + env(safe-area-inset-bottom));
+      z-index: 1000;
+    }
+    
+    .action-sheet.active {
+      display: block;
+    }
+    
+    .action-sheet h3 {
+      font-size: 14px;
+      color: #888;
+      text-align: center;
+      margin-bottom: 16px;
+    }
+    
+    .action-btn {
+      width: 100%;
+      padding: 16px;
+      border: none;
+      background: #3a3a5a;
+      color: #fff;
+      font-size: 16px;
+      border-radius: 12px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    
+    .action-btn:active {
+      background: #4a4a6a;
+    }
+    
+    .action-btn-cancel {
+      background: transparent;
+      color: #ff4757;
+    }
+    
+    /* ステータスバー */
+    .status-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #2a2a4a;
+      padding: 10px 16px;
+      padding-bottom: calc(10px + env(safe-area-inset-bottom));
+      display: none;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+    }
+    
+    .status-bar.active {
+      display: flex;
+    }
+    
+    .status-bar .status {
+      color: #4CAF50;
+    }
+    
+    .status-bar .info {
+      color: #aaa;
+      font-size: 12px;
+    }
+    
+    /* ローディング */
+    .loading {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.8);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
+    
+    .loading.active {
+      display: flex;
+    }
+    
+    .spinner {
+      width: 44px;
+      height: 44px;
+      border: 4px solid #333;
+      border-top-color: #667eea;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    .loading p {
+      margin-top: 16px;
+      color: #aaa;
+      font-size: 14px;
+    }
+    
+    /* 写真入力 */
+    .photo-file-input {
+      display: none;
+    }
+
+
+    
+    /* 現在のファイル情報 */
+    .current-file {
+      background: #2a2a4a;
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .current-file-icon {
+      font-size: 32px;
+    }
+    
+    .current-file-info {
+      flex: 1;
+    }
+    
+    .current-file-name {
+      font-size: 15px;
+      font-weight: 600;
+    }
+    
+    .current-file-path {
+      font-size: 12px;
+      color: #888;
+    }
+    
+    /* 統計情報 */
+    .stats {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 16px;
+      font-size: 13px;
+      color: #aaa;
+      flex-wrap: wrap;
+    }
+    
+    .stats span {
+      background: rgba(255,255,255,0.1);
+      padding: 6px 12px;
+      border-radius: 6px;
+    }
+
+    /* PIN認証画面 */
+    .pin-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: #1a1a2e;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      padding: 20px;
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    .pin-screen.hidden {
+      display: none;
+    }
+
+    .pin-lock-icon {
+      font-size: 48px;
+      margin-bottom: 8px;
+    }
+
+    .pin-title {
+      font-size: 17px;
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: #fff;
+    }
+
+    .pin-subtitle {
+      font-size: 14px;
+      color: #aaa;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+
+    .pin-error {
+      color: #ff6b6b;
+      font-size: 13px;
+      min-height: 20px;
+      margin-bottom: 8px;
+      transition: opacity 0.3s;
+    }
+
+    .pin-dots {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .pin-dot {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 2px solid #667eea;
+      background: transparent;
+      transition: all 0.15s;
+    }
+
+    .pin-dot.filled {
+      background: #667eea;
+      transform: scale(1.1);
+    }
+
+    .pin-dot.error {
+      border-color: #ff6b6b;
+      background: #ff6b6b;
+      animation: pinShake 0.4s;
+    }
+
+    @keyframes pinShake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-8px); }
+      40% { transform: translateX(8px); }
+      60% { transform: translateX(-4px); }
+      80% { transform: translateX(4px); }
+    }
+
+    .pin-keypad {
+      display: grid;
+      grid-template-columns: repeat(3, 72px);
+      gap: 12px;
+    }
+
+    .pin-key {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+      font-size: 28px;
+      font-weight: 300;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+      -webkit-appearance: none;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .pin-key:active {
+      background: rgba(102, 126, 234, 0.4);
+      transform: scale(0.95);
+    }
+
+    .pin-key.fn {
+      font-size: 14px;
+      font-weight: 400;
+      border-color: transparent;
+      background: transparent;
+    }
+
+    .pin-key.fn:active {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .pin-reset {
+      margin-top: 32px;
+      color: #667eea;
+      font-size: 13px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 8px 16px;
+      -webkit-appearance: none;
+    }
+
+    .pin-reset:active {
+      opacity: 0.6;
+    }
+  </style>
+</head>
+<body>
+  <!-- PIN認証画面 -->
+  <div class="pin-screen" id="pin-screen">
+    <div class="pin-lock-icon">🔒</div>
+    <div class="pin-title" id="pin-title">PINを設定してください</div>
+    <div class="pin-subtitle" id="pin-subtitle">4桁の数字を入力</div>
+    <div class="pin-error" id="pin-error">&nbsp;</div>
+    <div class="pin-dots">
+      <div class="pin-dot" id="pin-dot-0"></div>
+      <div class="pin-dot" id="pin-dot-1"></div>
+      <div class="pin-dot" id="pin-dot-2"></div>
+      <div class="pin-dot" id="pin-dot-3"></div>
+    </div>
+    <div class="pin-keypad">
+      <button class="pin-key" onclick="pinInput('1')">1</button>
+      <button class="pin-key" onclick="pinInput('2')">2</button>
+      <button class="pin-key" onclick="pinInput('3')">3</button>
+      <button class="pin-key" onclick="pinInput('4')">4</button>
+      <button class="pin-key" onclick="pinInput('5')">5</button>
+      <button class="pin-key" onclick="pinInput('6')">6</button>
+      <button class="pin-key" onclick="pinInput('7')">7</button>
+      <button class="pin-key" onclick="pinInput('8')">8</button>
+      <button class="pin-key" onclick="pinInput('9')">9</button>
+      <button class="pin-key fn" onclick="pinClear()">CLR</button>
+      <button class="pin-key" onclick="pinInput('0')">0</button>
+      <button class="pin-key fn" onclick="pinBackspace()">⌫</button>
+    </div>
+    <button class="pin-reset" id="pin-reset-btn" onclick="pinReset()" style="display:none;">PINをリセット</button>
+  </div>
+
+  <!-- ヘッダー -->
+  <header class="header">
+    <h1>📋 斜面カルテ DX</h1>
+    <div class="header-actions" id="header-actions" style="display: none;">
+      <button class="btn" onclick="closeFile()">閉じる</button>
+      <button class="btn btn-primary" onclick="saveFile()">🔒 保存</button>
+      <button class="btn" onclick="saveFileNoEncrypt()">💾 保存(暗号化なし)</button>
+      <button class="btn" onclick="saveFileAs()" id="save-as-btn" style="display:none;">📥 別名保存</button>
+    </div>
+  </header>
+
+  <!-- メインコンテンツ -->
+  <main class="container">
+    <!-- ファイル選択画面 -->
+    <div class="file-select" id="file-select">
+      <div class="file-drop-zone" id="drop-zone">
+        <div class="file-icon">📁</div>
+        <h2>斜面カルテを開く</h2>
+        <p>タップしてファイルを選択<br>(OneDrive / iCloud / ローカル)</p>
+        <input type="file" id="file-input" accept=".xlsx,.xls">
+      </div>
+    </div>
+
+    <!-- エディター画面 -->
+    <div id="editor" style="display: none;">
+      <div class="current-file" id="current-file">
+        <span class="current-file-icon">📊</span>
+        <div class="current-file-info">
+          <div class="current-file-name" id="current-file-name">-</div>
+          <div class="current-file-path" id="current-file-path">ローカルファイル</div>
+        </div>
+      </div>
+      <div class="sheet-tabs" id="sheet-tabs"></div>
+      <div class="stats" id="stats"></div>
+      <div class="photo-grid" id="photo-grid"></div>
+    </div>
+  </main>
+
+  <!-- ステータスバー -->
+  <div class="status-bar" id="status-bar">
+    <span class="status" id="status-text">準備完了</span>
+    <span class="info" id="info-text"></span>
+  </div>
+
+  <!-- アクションシート（写真選択方法） -->
+  <div class="action-sheet-backdrop" id="action-backdrop" onclick="closeActionSheet()"></div>
+  <div class="action-sheet" id="action-sheet">
+    <h3 id="action-sheet-title">写真を追加</h3>
+    <button class="action-btn" onclick="openCamera()">
+      📷 カメラで撮影
+    </button>
+    <button class="action-btn" onclick="openPhotoLibrary()">
+      🖼️ 写真を選択
+    </button>
+    <button class="action-btn action-btn-cancel" onclick="closeActionSheet()">
+      キャンセル
+    </button>
+  </div>
+
+  <!-- 写真選択用input -->
+  <input type="file" id="photo-input" class="photo-file-input" accept="image/*">
+  <input type="file" id="camera-input" class="photo-file-input" accept="image/*" capture="environment">
+
+  <!-- ローディング -->
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <p id="loading-text">読み込み中...</p>
+  </div>
+
+  <script>
+    // グローバル状態
+    let workbook = null;
+    let currentFileName = null;
+    let currentSheetName = null;
+    let photoData = [];
+    let currentPhotoIndex = null;
+    let hasUnsavedChanges = false;
+    let savedColumnWidths = {}; // シートごとの列幅を保持
+    let savedRowHeights = {};   // シートごとの行高さを保持
+    let fileHandle = null; // File System Access API用ハンドル
+    let appPIN = null; // 認証済みPIN（メモリ上のみ、暗号化/復号に使用）
+
+    // File System Access API対応チェック
+    const supportsFileSystemAccess = ('showOpenFilePicker' in window);
+
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+
+    // ============================
+    // PIN認証システム
+    // ============================
+    const PIN_HASH_KEY = 'slopeKartePINHash';
+    let pinBuffer = '';
+    let pinMode = 'auth'; // 'setup', 'setup-confirm', 'auth'
+    let pinSetupFirst = ''; // 設定モードの1回目入力値
+
+    // SHA-256ハッシュ生成
+    async function sha256(text) {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(text);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    // PIN画面初期化
+    function initPINScreen() {
+      const pinScreen = document.getElementById('pin-screen');
+      const savedHash = localStorage.getItem(PIN_HASH_KEY);
+
+      if (savedHash) {
+        // 既にPIN設定済み → 認証モード
+        pinMode = 'auth';
+        document.getElementById('pin-title').textContent = 'PINを入力してください';
+        document.getElementById('pin-subtitle').textContent = '4桁の数字を入力';
+        document.getElementById('pin-reset-btn').style.display = 'inline-block';
+      } else {
+        // 未設定 → 設定モード
+        pinMode = 'setup';
+        document.getElementById('pin-title').textContent = 'PINを設定してください';
+        document.getElementById('pin-subtitle').textContent = '4桁の数字を入力';
+        document.getElementById('pin-reset-btn').style.display = 'none';
+      }
+      pinScreen.classList.remove('hidden');
+      pinBuffer = '';
+      updatePINDots();
+    }
+
+    // ドット表示更新
+    function updatePINDots() {
+      for (let i = 0; i < 4; i++) {
+        const dot = document.getElementById(`pin-dot-${i}`);
+        dot.classList.toggle('filled', i < pinBuffer.length);
+        dot.classList.remove('error');
+      }
+    }
+
+    // エラー表示（ドット振動）
+    function showPINError(msg) {
+      document.getElementById('pin-error').textContent = msg;
+      for (let i = 0; i < 4; i++) {
+        document.getElementById(`pin-dot-${i}`).classList.add('error');
+      }
+      setTimeout(() => {
+        pinBuffer = '';
+        updatePINDots();
+        document.getElementById('pin-error').innerHTML = '&nbsp;';
+      }, 600);
+    }
+
+    // PIN入力
+    function pinInput(digit) {
+      if (pinBuffer.length >= 4) return;
+      pinBuffer += digit;
+      updatePINDots();
+
+      if (pinBuffer.length === 4) {
+        setTimeout(() => processPIN(), 150);
+      }
+    }
+
+    // PIN削除
+    function pinBackspace() {
+      if (pinBuffer.length > 0) {
+        pinBuffer = pinBuffer.slice(0, -1);
+        updatePINDots();
+      }
+    }
+
+    // PINクリア
+    function pinClear() {
+      pinBuffer = '';
+      updatePINDots();
+      document.getElementById('pin-error').innerHTML = '&nbsp;';
+    }
+
+    // PIN処理（4桁揃った時）
+    async function processPIN() {
+      if (pinMode === 'setup') {
+        // 設定モード: 1回目入力
+        pinSetupFirst = pinBuffer;
+        pinMode = 'setup-confirm';
+        document.getElementById('pin-title').textContent = '確認のためもう一度';
+        document.getElementById('pin-subtitle').textContent = '同じPINを入力してください';
+        pinBuffer = '';
+        updatePINDots();
+      } else if (pinMode === 'setup-confirm') {
+        // 設定モード: 2回目入力（確認）
+        if (pinBuffer === pinSetupFirst) {
+          // 一致 → 保存して認証完了
+          const hash = await sha256(pinBuffer);
+          localStorage.setItem(PIN_HASH_KEY, hash);
+          appPIN = pinBuffer;
+          pinAuthenticated();
+        } else {
+          // 不一致 → やり直し
+          showPINError('PINが一致しません');
+          setTimeout(() => {
+            pinMode = 'setup';
+            document.getElementById('pin-title').textContent = 'PINを設定してください';
+            document.getElementById('pin-subtitle').textContent = '4桁の数字を入力';
+            pinSetupFirst = '';
+          }, 600);
+        }
+      } else if (pinMode === 'auth') {
+        // 認証モード
+        const hash = await sha256(pinBuffer);
+        const savedHash = localStorage.getItem(PIN_HASH_KEY);
+        if (hash === savedHash) {
+          appPIN = pinBuffer;
+          pinAuthenticated();
+        } else {
+          showPINError('PINが違います');
+        }
+      }
+    }
+
+    // PIN認証成功
+    function pinAuthenticated() {
+      const pinScreen = document.getElementById('pin-screen');
+      pinScreen.classList.add('hidden');
+      pinBuffer = '';
+    }
+
+    // PINリセット
+    function pinReset() {
+      if (confirm('PINをリセットすると、暗号化済みファイルを開けなくなる可能性があります。\n\nリセットしますか？')) {
+        localStorage.removeItem(PIN_HASH_KEY);
+        appPIN = null;
+        pinBuffer = '';
+        pinSetupFirst = '';
+        initPINScreen();
+      }
+    }
+
+    // アプリ起動時にPIN画面を表示
+    initPINScreen();
+
+    // ============================
+    // Excel暗号化/復号ヘルパー（Excelネイティブ暗号化 via xlsx-populate）
+    // ============================
+    // xlsx-populateでExcel標準のAES-256暗号化を行う。
+    // ただしxlsx-populateはシートのファイル名をリマッピングする問題があるため、
+    // 暗号化後にZIPレベルでworkbook.xml.rels等を復元する修正を行う。
+
+    // （ZIP修正関数 fixZipSheetRefs は下記の復号処理内に定義）
+
+    // xlsx-populate通過後のZIPを修正（Content_Typesベースでシート参照を復元）
+    // 復号時にはsavedZipMetadataがないため、ZIP内のContent_Typesを正として使う
+    async function fixZipSheetRefs(buffer) {
+      try {
+        const zip = await JSZip.loadAsync(buffer);
+
+        // workbook.xml.relsから現在のシート参照を取得（xlsx-populateがリマップした番号）
+        const rels = await zip.files['xl/_rels/workbook.xml.rels'].async('string');
+        const relsMatches = [...rels.matchAll(/Target="worksheets\/(sheet\d+\.xml)"/g)];
+        const relsSheets = relsMatches.map(m => m[1]); // sheet1, sheet2, ...
+
+        // Content_Typesから元のシート参照を取得（ExcelJSが出力した本来の番号）
+        const ct = await zip.files['[Content_Types].xml'].async('string');
+        const ctMatches = ct.match(/PartName="\/xl\/worksheets\/sheet\d+\.xml"/g) || [];
+        const ctSheets = ctMatches.map(m => m.match(/sheet\d+\.xml/)[0]); // sheet9, sheet10, ...
+
+        if (ctSheets.length === 0 || relsSheets.length === 0) return buffer;
+
+        // リマッピングが不要か判定（完全一致なら修正不要）
+        const relsSet = new Set(relsSheets);
+        const ctSet = new Set(ctSheets);
+        const needsFix = relsSheets.some(s => !ctSet.has(s)) || ctSheets.some(s => !relsSet.has(s));
+        if (!needsFix) {
+          console.log('ZIP修正不要（シート参照一致）');
+          return buffer;
+        }
+
+        console.log('シートリマッピング検出:', relsSheets, '←', ctSheets);
+
+        // 戦略: relsの番号（xlsx-populateがworkbook.xml.relsで使う番号）を正として、
+        // 元の番号（Content_Types/実データ）の内容をrelsの番号にコピーする
+        // relsSheets[i] ← ctSheets[i] の対応関係
+
+        const mapping = []; // { from: 'sheet9.xml', to: 'sheet1.xml' }
+        for (let i = 0; i < Math.min(relsSheets.length, ctSheets.length); i++) {
+          if (relsSheets[i] !== ctSheets[i]) {
+            mapping.push({ from: ctSheets[i], to: relsSheets[i] });
+          }
+        }
+
+        if (mapping.length === 0) return buffer;
+
+        // 1. シートXMLの内容をコピー（元のシートの実データ → 新しい番号）
+        for (const { from, to } of mapping) {
+          const fromPath = 'xl/worksheets/' + from;
+          const toPath = 'xl/worksheets/' + to;
+          if (zip.files[fromPath]) {
+            const content = await zip.files[fromPath].async('uint8array');
+            zip.file(toPath, content);
+            console.log(`シートXMLコピー: ${from} → ${to} (${content.length} bytes)`);
+          }
+        }
+
+        // 2. worksheet relsもコピー（drawing接続を維持）
+        for (const { from, to } of mapping) {
+          const fromRels = 'xl/worksheets/_rels/' + from + '.rels';
+          const toRels = 'xl/worksheets/_rels/' + to + '.rels';
+          if (zip.files[fromRels]) {
+            const relsContent = await zip.files[fromRels].async('string');
+            zip.file(toRels, relsContent);
+            console.log(`シートrels コピー: ${from}.rels → ${to}.rels`);
+          }
+        }
+
+        // 3. Content_Typesを更新（元の番号 → 新しい番号）
+        let fixedCt = ct;
+        for (const { from, to } of mapping) {
+          fixedCt = fixedCt.replace(
+            new RegExp(`PartName="/xl/worksheets/${from.replace('.', '\\.')}"`, 'g'),
+            `PartName="/xl/worksheets/${to}"`
+          );
+        }
+        zip.file('[Content_Types].xml', fixedCt);
+
+        // 4. 元のシートファイルとrelsを削除（新しい番号にコピー済みなので不要）
+        const newSheetSet = new Set(relsSheets.map(s => 'xl/worksheets/' + s));
+        const allSheetFiles = Object.keys(zip.files)
+          .filter(f => /xl\/worksheets\/sheet\d+\.xml$/.test(f));
+        for (const f of allSheetFiles) {
+          if (!newSheetSet.has(f)) {
+            zip.remove(f);
+            console.log('余計なシートを削除:', f);
+          }
+        }
+        // 元のrelsも削除
+        const newRelsSet = new Set(relsSheets.map(s => 'xl/worksheets/_rels/' + s + '.rels'));
+        const allRelsFiles = Object.keys(zip.files)
+          .filter(f => /xl\/worksheets\/_rels\/sheet\d+\.xml\.rels$/.test(f));
+        for (const f of allRelsFiles) {
+          if (!newRelsSet.has(f)) {
+            zip.remove(f);
+            console.log('余計なrelsを削除:', f);
+          }
+        }
+
+        const result = await zip.generateAsync({
+          type: 'arraybuffer',
+          compression: 'DEFLATE',
+          compressionOptions: { level: 6 }
+        });
+        console.log('ZIP修正完了');
+        return result;
+      } catch (e) {
+        console.warn('ZIP修正スキップ:', e);
+        return buffer;
+      }
+    }
+
+    // ExcelJSのwriteBufferがデフォルト幅列にもcustomWidth="1"を付ける問題を修正
+    // Excelでの表示列幅が変わる（2.8→3.0）のを防ぐ
+    async function fixExcelJSColWidths(buffer) {
+      try {
+        const zip = await JSZip.loadAsync(buffer);
+        const sheetFiles = Object.keys(zip.files)
+          .filter(f => /xl\/worksheets\/sheet\d+\.xml$/.test(f));
+
+        for (const f of sheetFiles) {
+          let xml = await zip.files[f].async('string');
+          // width="9"（Excelのデフォルト列幅）のcol要素からcustomWidth="1"を除去
+          // オリジナルのExcelファイルではデフォルト幅にcustomWidthが付いていない
+          const modified = xml.replace(
+            /(<col [^>]*width="9"[^>]*) customWidth="1"([^>]*\/>)/g,
+            '$1$2'
+          ).replace(
+            /(<col [^>]*)customWidth="1" ([^>]*width="9"[^>]*\/>)/g,
+            '$1$2'
+          );
+          if (modified !== xml) {
+            zip.file(f, modified);
+          }
+        }
+
+        return await zip.generateAsync({
+          type: 'arraybuffer',
+          compression: 'DEFLATE',
+          compressionOptions: { level: 6 }
+        });
+      } catch (e) {
+        console.warn('列幅修正スキップ:', e);
+        return buffer;
+      }
+    }
+
+    // 復号処理（Excelネイティブ暗号化ファイルをPINで復号）
+    async function decryptIfNeeded(arrayBuffer) {
+      if (!appPIN) return arrayBuffer;
+
+      // Excelネイティブ暗号化はCFB形式（先頭バイトが 0xD0 0xCF）
+      const header = new Uint8Array(arrayBuffer, 0, 2);
+      const isCFB = (header[0] === 0xD0 && header[1] === 0xCF);
+
+      if (!isCFB) {
+        // ZIPヘッダー（PK = 0x50 0x4B）→ 非暗号化xlsx
+        console.log('非暗号化ファイルです（そのまま読み込み）');
+        return arrayBuffer;
+      }
+
+      try {
+        // xlsx-populateでパスワード付き復号
+        showLoading('暗号化ファイルを復号中...');
+        const xlsxWb = await XlsxPopulate.fromDataAsync(arrayBuffer, { password: appPIN });
+        const decryptedBuffer = await xlsxWb.outputAsync({ type: 'arraybuffer' });
+        console.log('暗号化ファイルをPINで復号しました');
+
+        // xlsx-populateのシートリマッピング問題を修正
+        const fixedBuffer = await fixZipSheetRefs(decryptedBuffer);
+        return fixedBuffer;
+      } catch (e) {
+        console.error('復号失敗:', e);
+        throw new Error('ファイルのパスワードが一致しません。PINをリセットして正しいパスワードで再設定してください。');
+      }
+    }
+
+    // 暗号化処理（ExcelJSのwriteBuffer出力をExcelネイティブ暗号化）
+    // xlsx-populateはシートをリマップするため、暗号化→復号→修正→再暗号化の手順で
+    // Excelでも正しく開ける暗号化ファイルを生成する
+    async function encryptBuffer(buffer) {
+      if (!appPIN) return buffer;
+
+      try {
+        // Step 1: xlsx-populateで一度パススルー（リマップが発生）
+        const xlsxWb = await XlsxPopulate.fromDataAsync(buffer);
+        const passedBuffer = await xlsxWb.outputAsync({ type: 'arraybuffer' });
+
+        // Step 2: リマップされたZIPを修正
+        const fixedBuffer = await fixZipSheetRefs(passedBuffer);
+
+        // Step 3: 修正済みZIPをxlsx-populateで暗号化
+        // 修正済みなので再度リマップされても sheet1=sheet1 で一致する
+        const xlsxWb2 = await XlsxPopulate.fromDataAsync(fixedBuffer);
+        const encrypted = await xlsxWb2.outputAsync({ password: appPIN, type: 'arraybuffer' });
+        console.log('ファイルをPINでExcelネイティブ暗号化しました（ZIP修正済み）');
+        return encrypted;
+      } catch (e) {
+        console.error('暗号化失敗:', e);
+        throw new Error('ファイルの暗号化に失敗しました: ' + e.message);
+      }
+    }
+
+    // DOM要素
+    const fileSelect = document.getElementById('file-select');
+    const editor = document.getElementById('editor');
+    const headerActions = document.getElementById('header-actions');
+    const statusBar = document.getElementById('status-bar');
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input');
+    const sheetTabs = document.getElementById('sheet-tabs');
+    const photoGrid = document.getElementById('photo-grid');
+    const loading = document.getElementById('loading');
+    const actionSheet = document.getElementById('action-sheet');
+    const actionBackdrop = document.getElementById('action-backdrop');
+    const photoInput = document.getElementById('photo-input');
+    const cameraInput = document.getElementById('camera-input');
+
+    // ファイル選択イベント
+    dropZone.addEventListener('click', async () => {
+      if (supportsFileSystemAccess) {
+        // File System Access API対応ブラウザ → ファイルハンドル取得
+        try {
+          const [handle] = await window.showOpenFilePicker({
+            types: [{
+              description: 'Excel ファイル',
+              accept: { 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'] }
+            }],
+            multiple: false
+          });
+          fileHandle = handle;
+          const file = await handle.getFile();
+          loadExcelFile(file);
+        } catch (err) {
+          // ユーザーがキャンセルした場合
+          if (err.name !== 'AbortError') {
+            console.error('ファイル選択エラー:', err);
+          }
+        }
+      } else {
+        // 非対応ブラウザ → 従来のinput
+        fileInput.click();
+      }
+    });
+    fileInput.addEventListener('change', handleFileSelect);
+    photoInput.addEventListener('change', handlePhotoSelect);
+    cameraInput.addEventListener('change', handlePhotoSelect);
+
+    // ファイル選択ハンドラ（従来のinput用）
+    function handleFileSelect(e) {
+      const file = e.target.files[0];
+      if (file) {
+        fileHandle = null; // inputから選んだ場合はハンドルなし
+        loadExcelFile(file);
+      }
+    }
+
+    // Excelファイル読み込み
+    async function loadExcelFile(file) {
+      showLoading('Excelファイルを読み込み中...');
+
+      try {
+        const arrayBuffer = await file.arrayBuffer();
+
+        // 暗号化ファイルの復号を試行
+        let loadBuffer;
+        try {
+          loadBuffer = await decryptIfNeeded(arrayBuffer);
+        } catch (decryptError) {
+          hideLoading();
+          alert(decryptError.message);
+          return;
+        }
+
+        workbook = new ExcelJS.Workbook();
+        await workbook.xlsx.load(loadBuffer);
+        
+        // 全シートの列幅・行高さを保存（ExcelJSが保存時に変更するのを防ぐ）
+        savedColumnWidths = {};
+        savedRowHeights = {};
+        workbook.worksheets.forEach(ws => {
+          savedColumnWidths[ws.name] = {};
+          for (let c = 1; c <= ws.columnCount; c++) {
+            const col = ws.getColumn(c);
+            if (col.width) {
+              savedColumnWidths[ws.name][c] = col.width;
+            }
+          }
+          savedRowHeights[ws.name] = {};
+          ws.eachRow({ includeEmpty: true }, (row, rowNumber) => {
+            if (row.height) {
+              savedRowHeights[ws.name][rowNumber] = row.height;
+            }
+          });
+        });
+        
+        currentFileName = file.name;
+        document.getElementById('current-file-name').textContent = file.name;
+        
+        fileSelect.style.display = 'none';
+        editor.style.display = 'block';
+        headerActions.style.display = 'flex';
+        // ファイルハンドルがある場合は「別名保存」ボタンを表示
+        document.getElementById('save-as-btn').style.display = fileHandle ? 'inline-block' : 'none';
+        statusBar.classList.add('active');
+        
+        renderSheetTabs();
+        
+        // Photoシートを自動選択（figを含まないもの）
+        const photoSheet = workbook.worksheets.find(s => 
+          s.name.includes('Photo') && !s.name.includes('fig')
+        );
+        if (photoSheet) {
+          selectSheet(photoSheet.name);
+        } else if (workbook.worksheets.length > 0) {
+          selectSheet(workbook.worksheets[0].name);
+        }
+        
+        setStatus('読み込み完了', file.name);
+        hideLoading();
+      } catch (error) {
+        console.error('Error loading Excel:', error);
+        alert('ファイルの読み込みに失敗しました: ' + error.message);
+        hideLoading();
+      }
+    }
+
+    // シートタブ描画
+    function renderSheetTabs() {
+      sheetTabs.innerHTML = '';
+      workbook.worksheets.forEach(sheet => {
+        const tab = document.createElement('button');
+        tab.className = 'sheet-tab';
+        tab.textContent = sheet.name;
+        tab.onclick = () => selectSheet(sheet.name);
+        sheetTabs.appendChild(tab);
+      });
+    }
+
+    // シート選択
+    function selectSheet(sheetName) {
+      currentSheetName = sheetName;
+      
+      document.querySelectorAll('.sheet-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.textContent === sheetName);
+      });
+      
+      parseAndRenderSheet(sheetName);
+    }
+
+    // シート解析・描画
+    function parseAndRenderSheet(sheetName) {
+      const sheet = workbook.getWorksheet(sheetName);
+      photoData = [];
+      
+      if (sheetName.includes('Photo') && !sheetName.includes('fig')) {
+        parsePhotoSheet(sheet);
+      } else {
+        renderGenericSheet(sheet);
+      }
+    }
+
+    // 写真シート解析（3列構造対応）
+    function parsePhotoSheet(sheet) {
+      showLoading('写真データを解析中...');
+      
+      console.log('=== parsePhotoSheet 開始 ===');
+      console.log('sheet.rowCount:', sheet.rowCount);
+      
+      // セル値を安全に取得するヘルパー関数
+      function getCellText(cell) {
+        if (!cell || !cell.value) return '';
+        
+        const val = cell.value;
+        console.log('セル値の型:', typeof val, val);
+        
+        // リッチテキストの場合
+        if (typeof val === 'object') {
+          if (val.richText && Array.isArray(val.richText)) {
+            const text = val.richText.map(rt => rt.text || '').join('');
+            console.log('リッチテキスト:', text.substring(0, 50));
+            return text;
+          }
+          if (val.text) {
+            console.log('val.text:', val.text);
+            return String(val.text);
+          }
+          if (val.result !== undefined) {
+            console.log('val.result:', val.result);
+            return String(val.result);
+          }
+          // その他のオブジェクト
+          try {
+            const str = JSON.stringify(val);
+            console.log('JSON:', str.substring(0, 100));
+            return str;
+          } catch (e) {
+            return '';
+          }
+        }
+        
+        // 通常の値
+        return String(val);
+      }
+      
+      // 画像を取得してマップ化
+      const images = sheet.getImages();
+      console.log('画像数:', images.length);
+      const imageDataList = [];
+      
+      images.forEach((img, idx) => {
+        const imageId = img.imageId;
+        const image = workbook.getImage(imageId);
+        
+        if (image && image.buffer) {
+          const base64 = btoa(
+            new Uint8Array(image.buffer)
+              .reduce((data, byte) => data + String.fromCharCode(byte), '')
+          );
+          const dataUrl = `data:image/${image.extension || 'jpeg'};base64,${base64}`;
+          
+          // アンカー位置を取得
+          let row = 0, col = 0;
+          if (img.range && img.range.tl) {
+            row = img.range.tl.row;
+            col = img.range.tl.col;
+          }
+          imageDataList.push({ dataUrl, row, col, index: idx });
+        }
+      });
+      
+      // 3列構造: A列(1), V列(22), AQ列(43)
+      const photoCols = [1, 22, 43];
+      const photoEntries = [];
+      
+      // まず最初の数行をデバッグ出力
+      console.log('=== 行27-29のセル値を確認 ===');
+      for (let row = 27; row <= 29; row++) {
+        for (const col of photoCols) {
+          const cell = sheet.getCell(row, col);
+          const text = getCellText(cell);
+          console.log(`行${row} 列${col}: "${text.substring(0, 40)}..."`);
+        }
+      }
+      
+      // セルを走査して写真ラベルとコメントを探す
+      for (let row = 1; row <= sheet.rowCount; row++) {
+        for (const col of photoCols) {
+          const cell = sheet.getCell(row, col);
+          const cellValue = getCellText(cell).trim();
+          
+          // 写真ラベルを検出
+          if (cellValue.includes('写真') && 
+              !cellValue.includes('コメント') && 
+              !cellValue.includes('調査') &&
+              !cellValue.includes('位置')) {
+            
+            // ラベルを抽出（括弧を除去）
+            const labelMatch = cellValue.match(/[（(]?(写真[ア-ン]+|写真[a-zA-Z0-9]+)[）)]?/);
+            const label = labelMatch ? labelMatch[1] : cellValue.replace(/[（()）]/g, '');
+            
+            // 次の行の同じ列がコメント行か確認
+            const nextCell = sheet.getCell(row + 1, col);
+            const nextValue = getCellText(nextCell);
+            
+            let comment = '';
+            let commentRow = row + 1;
+            
+            if (nextValue.includes('コメント')) {
+              // （コメント）の後の内容を取得
+              // 改行で分割して、最初の「（コメント）」行を除く
+              const lines = nextValue.split('\n');
+              if (lines.length > 1) {
+                // 最初の行が「（コメント）」だけの場合、残りを結合
+                comment = lines.slice(1).join('\n').trim();
+              } else {
+                // 改行がない場合は（コメント）を除去
+                comment = nextValue
+                  .replace(/[（(]コメント[）)]/g, '')
+                  .trim();
+              }
+            }
+            
+            photoEntries.push({
+              label: label,
+              labelRow: row,
+              labelCol: col,
+              commentRow: commentRow,
+              commentCol: col,
+              comment: comment,
+              imageBase64: null,
+              isDummy: comment.trim() === '' // コメントが空ならダミー
+            });
+          }
+        }
+      }
+      
+      console.log('=== 解析結果 ===');
+      console.log('photoEntries数:', photoEntries.length);
+      if (photoEntries.length > 0) {
+        console.log('最初のエントリ:', photoEntries[0]);
+        console.log('最初のコメント:', photoEntries[0].comment.substring(0, 50));
+      }
+      
+      console.log(`画像数: ${imageDataList.length}`);
+      
+      // 写真エントリも行・列順にソート
+      photoEntries.sort((a, b) => {
+        if (a.labelRow !== b.labelRow) return a.labelRow - b.labelRow;
+        return a.labelCol - b.labelCol;
+      });
+      
+      console.log(`写真エントリ数: ${photoEntries.length}`);
+      console.log(`既存（コメントあり）: ${photoEntries.filter(e => !e.isDummy).length}`);
+      console.log(`ダミー（コメントなし）: ${photoEntries.filter(e => e.isDummy).length}`);
+      
+      // 画像をアンカー位置ベースで写真エントリに紐付け
+      // 各画像のtl(col)から列グループを判定し、tl(row)がlabelRowの直上にあるエントリとマッチ
+      imageDataList.forEach((img) => {
+        // 列グループ判定: A列(1), V列(22), AQ列(43)
+        let colGroup;
+        if (img.col < 15) colGroup = 1;
+        else if (img.col < 35) colGroup = 22;
+        else colGroup = 43;
+        
+        // 同じ列グループで、画像が上にあるラベルのうち最も近いものを探す
+        let bestEntry = null;
+        let bestDist = Infinity;
+        
+        for (const entry of photoEntries) {
+          if (entry.labelCol !== colGroup) continue;
+          // 画像のtl.rowはラベル行(1-based→0-based: labelRow-1)より上にあるはず
+          const labelRow0 = entry.labelRow - 1;
+          if (img.row < labelRow0) {
+            const dist = labelRow0 - img.row;
+            if (dist < bestDist) {
+              bestDist = dist;
+              bestEntry = entry;
+            }
+          }
+        }
+        
+        if (bestEntry) {
+          bestEntry.imageBase64 = img.dataUrl;
+          console.log(`画像マッチ: tl(row=${img.row.toFixed(1)}, col=${img.col.toFixed(1)}) → ${bestEntry.label}`);
+        }
+      });
+      
+      photoData = photoEntries.map((entry, index) => ({
+        index: index,
+        label: entry.label,
+        labelRow: entry.labelRow,
+        labelCol: entry.labelCol,
+        commentRow: entry.commentRow,
+        commentCol: entry.commentCol,
+        imageBase64: entry.imageBase64,
+        comment: entry.comment,
+        isDummy: !entry.imageBase64 && entry.comment.trim() === '', // 画像もコメントもなければダミー
+        isModified: false
+      }));
+      
+      console.log('Parsed photoData:', photoData);
+      
+      renderPhotoGrid();
+      updateStats();
+      hideLoading();
+    }
+
+    // 統計情報更新
+    function updateStats() {
+      const total = photoData.length;
+      const withPhoto = photoData.filter(p => p.imageBase64).length;
+      const dummy = photoData.filter(p => p.isDummy).length;
+      
+      document.getElementById('stats').innerHTML = `
+        <span>📷 写真: ${withPhoto}枚</span>
+        <span>📝 既存: ${total - dummy}件</span>
+        <span>➕ 空き枠: ${dummy}件</span>
+      `;
+    }
+
+    // 写真グリッド描画
+    function renderPhotoGrid() {
+      photoGrid.innerHTML = '';
+      
+      photoData.forEach((photo, index) => {
+        const card = document.createElement('div');
+        card.className = 'photo-card' + (photo.isDummy ? ' is-dummy' : '');
+        
+        const labelClass = photo.isDummy ? 'photo-label dummy' : 'photo-label';
+        
+        card.innerHTML = `
+          <div class="photo-frame" onclick="showActionSheet(${index})">
+            <span class="${labelClass}">${photo.label}</span>
+            ${photo.imageBase64 
+              ? `<img src="${photo.imageBase64}" alt="${photo.label}">`
+              : `<div class="placeholder">
+                   <span class="placeholder-icon">📷</span>
+                   <span>タップして撮影</span>
+                 </div>`
+            }
+          </div>
+          <div class="photo-info">
+            <h3>コメント ${photo.isDummy ? '（新規）' : ''}</h3>
+            <textarea class="comment-input" 
+                      placeholder="コメントを入力..."
+                      onchange="updateComment(${index}, this.value)"
+                      oninput="markAsModified(${index})"
+            >${photo.comment}</textarea>
+          </div>
+        `;
+        
+        photoGrid.appendChild(card);
+      });
+    }
+
+    // 汎用シート表示
+    function renderGenericSheet(sheet) {
+      document.getElementById('stats').innerHTML = '';
+      photoGrid.innerHTML = `
+        <div style="text-align: center; padding: 40px; color: #888;">
+          <p style="font-size: 48px; margin-bottom: 20px;">📄</p>
+          <h3>${sheet.name}</h3>
+          <p style="margin-top: 10px;">このシートは閲覧モードです</p>
+        </div>
+      `;
+    }
+
+    // アクションシート表示
+    function showActionSheet(photoIndex) {
+      currentPhotoIndex = photoIndex;
+      const photo = photoData[photoIndex];
+      document.getElementById('action-sheet-title').textContent =
+        photo.imageBase64 ? `${photo.label} - 写真を変更` : `${photo.label} - 写真を追加`;
+
+      actionSheet.classList.add('active');
+      actionBackdrop.classList.add('active');
+    }
+
+    // アクションシート閉じる
+    function closeActionSheet() {
+      actionSheet.classList.remove('active');
+      actionBackdrop.classList.remove('active');
+    }
+
+    // カメラで撮影
+    function openCamera() {
+      closeActionSheet();
+      cameraInput.click();
+    }
+
+    // 写真ライブラリから選択
+    function openPhotoLibrary() {
+      closeActionSheet();
+      photoInput.click();
+    }
+
+    // 写真をCanvas経由で正規化（EXIF回転を適用し、正しい向きのJPEGにする）
+    function normalizeImage(file) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        const url = URL.createObjectURL(file);
+
+        img.onload = () => {
+          // Canvasに描画（ブラウザがEXIF Orientationを自動適用してくれる）
+          const canvas = document.createElement('canvas');
+          canvas.width = img.naturalWidth;
+          canvas.height = img.naturalHeight;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0);
+
+          // JPEG 85%品質で出力
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+          URL.revokeObjectURL(url);
+          resolve(dataUrl);
+        };
+
+        img.onerror = () => {
+          URL.revokeObjectURL(url);
+          reject(new Error('画像の読み込みに失敗しました'));
+        };
+
+        img.src = url;
+      });
+    }
+
+    // 写真選択ハンドラ
+    async function handlePhotoSelect(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      showLoading('写真を処理中...');
+
+      try {
+        // Canvas経由で正規化（EXIF回転を適用、上下反転を防止）
+        const dataUrl = await normalizeImage(file);
+
+        photoData[currentPhotoIndex].imageBase64 = dataUrl;
+        photoData[currentPhotoIndex].isModified = true;
+        photoData[currentPhotoIndex].isDummy = false;
+        hasUnsavedChanges = true;
+        renderPhotoGrid();
+        updateStats();
+        setStatus('写真を追加しました', photoData[currentPhotoIndex].label);
+      } catch (err) {
+        console.error('写真処理エラー:', err);
+        alert('写真の処理に失敗しました');
+      }
+
+      hideLoading();
+      e.target.value = '';
+    }
+
+    // コメント更新
+    function updateComment(index, value) {
+      photoData[index].comment = value;
+      photoData[index].isModified = true;
+      hasUnsavedChanges = true;
+    }
+    
+    // 変更マーク
+    function markAsModified(index) {
+      if (!photoData[index].isModified) {
+        photoData[index].isModified = true;
+        hasUnsavedChanges = true;
+      }
+    }
+
+    // ワークブックの変更をExcelに書き戻し、Blobを生成（保存共通処理）
+    async function prepareAndBuildBlob() {
+      const sheet = workbook.getWorksheet(currentSheetName);
+
+      // コメントをExcelに書き戻す（3列対応）
+      for (const photo of photoData) {
+        if (photo.isModified && photo.commentRow && photo.commentCol) {
+          const commentText = photo.comment
+            ? `（コメント）\n${photo.comment}`
+            : '（コメント）';
+
+          const cell = sheet.getCell(photo.commentRow, photo.commentCol);
+          cell.value = commentText;
+        }
+      }
+
+      // 画像の挿入（新規追加・変更分）
+      for (const photo of photoData) {
+        if (photo.isModified && photo.imageBase64) {
+          const match = photo.imageBase64.match(/^data:image\/(\w+);base64,(.+)$/);
+          if (!match) continue;
+
+          const extension = match[1] === 'jpg' ? 'jpeg' : match[1];
+          const base64Data = match[2];
+
+          const imageId = workbook.addImage({
+            base64: base64Data,
+            extension: extension,
+          });
+
+          // ラベル行の上に画像を配置（22.5行×19列）
+          const colStart = photo.labelCol;
+          const colEnd = colStart + 19;
+          const rowEnd = photo.labelRow - 1 - 0.1;
+          const rowStart = rowEnd - 22.5;
+
+          sheet.addImage(imageId, {
+            tl: { col: colStart, row: rowStart },
+            br: { col: colEnd, row: rowEnd },
+            editAs: 'oneCell'
+          });
+
+          console.log(`画像追加: ${photo.label} → row${rowStart}-${rowEnd}, col${colStart}-${colEnd}`);
+        }
+      }
+
+      // 保存前に列幅・行高さを復元（ExcelJSが変更するのを防ぐ）
+      workbook.worksheets.forEach(ws => {
+        const widths = savedColumnWidths[ws.name];
+        if (widths) {
+          for (const [colNum, width] of Object.entries(widths)) {
+            ws.getColumn(Number(colNum)).width = width;
+          }
+        }
+        const heights = savedRowHeights[ws.name];
+        if (heights) {
+          for (const [rowNum, height] of Object.entries(heights)) {
+            const row = ws.getRow(Number(rowNum));
+            row.height = height;
+          }
+        }
+      });
+
+      let buffer = await workbook.xlsx.writeBuffer();
+
+      // ExcelJSがデフォルト幅の列にも customWidth="1" を付けてしまう問題を修正
+      // オリジナルではwidth="9"の列にcustomWidthがないため、Excelの表示列幅が変わる
+      buffer = await fixExcelJSColWidths(buffer);
+
+      // PINが設定されていれば暗号化して保存
+      if (appPIN) {
+        showLoading('ファイルを暗号化中...');
+        // xlsx-populateで暗号化
+        const encryptedBuffer = await encryptBuffer(buffer);
+        return new Blob([encryptedBuffer], {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        });
+      }
+
+      return new Blob([buffer], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      });
+    }
+
+    // ファイル保存
+    async function saveFile() {
+      showLoading('ファイルを保存中...');
+      
+      try {
+        const blob = await prepareAndBuildBlob();
+
+        let saved = false;
+
+        // ファイルハンドルがある場合 → 上書き保存を試行
+        if (fileHandle) {
+          try {
+            const writable = await fileHandle.createWritable();
+            await writable.write(blob);
+            await writable.close();
+            saved = true;
+            setStatus('上書き保存しました ✓', currentFileName);
+          } catch (err) {
+            console.warn('上書き保存失敗、ダウンロードにフォールバック:', err);
+          }
+        }
+
+        // 上書き保存できなかった場合 → ダウンロード
+        if (!saved) {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = currentFileName || 'slope_karte.xlsx';
+          a.click();
+          URL.revokeObjectURL(url);
+          setStatus('ダウンロード保存しました', currentFileName);
+        }
+
+        hasUnsavedChanges = false;
+        photoData.forEach(p => p.isModified = false);
+        hideLoading();
+      } catch (error) {
+        console.error('Save error:', error);
+        alert('保存に失敗しました: ' + error.message);
+        hideLoading();
+      }
+    }
+
+    // 暗号化なし保存
+    async function saveFileNoEncrypt() {
+      showLoading('ファイルを保存中（暗号化なし）...');
+
+      try {
+        // 暗号化をスキップするため、一時的にappPINをnullにする
+        const savedPIN = appPIN;
+        appPIN = null;
+        const blob = await prepareAndBuildBlob();
+        appPIN = savedPIN;
+
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = currentFileName || 'slope_karte.xlsx';
+        a.click();
+        URL.revokeObjectURL(url);
+
+        setStatus('保存しました（暗号化なし）', currentFileName);
+        hasUnsavedChanges = false;
+        photoData.forEach(p => p.isModified = false);
+        hideLoading();
+      } catch (error) {
+        console.error('Save error:', error);
+        alert('保存に失敗しました: ' + error.message);
+        hideLoading();
+      }
+    }
+
+    // 別名保存（保存先を選択）
+    async function saveFileAs() {
+      // showSaveFilePicker対応ブラウザなら保存ダイアログを表示
+      if ('showSaveFilePicker' in window) {
+        showLoading('ファイルを保存中...');
+        try {
+          const blob = await prepareAndBuildBlob();
+
+          const newHandle = await window.showSaveFilePicker({
+            suggestedName: currentFileName || 'slope_karte.xlsx',
+            types: [{
+              description: 'Excel ファイル',
+              accept: { 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'] }
+            }]
+          });
+          const writable = await newHandle.createWritable();
+          await writable.write(blob);
+          await writable.close();
+
+          // 新しいハンドルに切り替え
+          fileHandle = newHandle;
+          currentFileName = newHandle.name;
+          document.getElementById('current-file-name').textContent = currentFileName;
+          document.getElementById('save-as-btn').style.display = 'inline-block';
+
+          hasUnsavedChanges = false;
+          photoData.forEach(p => p.isModified = false);
+          setStatus('別名保存しました ✓', currentFileName);
+          hideLoading();
+        } catch (err) {
+          hideLoading();
+          if (err.name !== 'AbortError') {
+            alert('保存に失敗しました: ' + err.message);
+          }
+        }
+      } else {
+        // フォールバック: 通常のダウンロード
+        saveFile();
+      }
+    }
+
+    // ファイルを閉じる
+    function closeFile() {
+      if (hasUnsavedChanges) {
+        if (!confirm('保存していない変更があります。閉じますか？')) {
+          return;
+        }
+      }
+      
+      workbook = null;
+      currentFileName = null;
+      currentSheetName = null;
+      photoData = [];
+      hasUnsavedChanges = false;
+      fileHandle = null;
+      
+      fileSelect.style.display = 'flex';
+      editor.style.display = 'none';
+      headerActions.style.display = 'none';
+      statusBar.classList.remove('active');
+      
+      fileInput.value = '';
+    }
+
+    // ステータス更新
+    function setStatus(status, info = '') {
+      document.getElementById('status-text').textContent = status;
+      document.getElementById('info-text').textContent = info;
+    }
+
+    // ローディング表示
+    function showLoading(text = '読み込み中...') {
+      document.getElementById('loading-text').textContent = text;
+      loading.classList.add('active');
+    }
+
+    function hideLoading() {
+      loading.classList.remove('active');
+    }
+  </script>
+</body>
+</html>
