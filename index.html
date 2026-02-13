@@ -52,25 +52,29 @@
     .header-brand {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
+      min-width: 0;
     }
 
-    .header-logo-mark {
-      font-size: 20px;
-      font-weight: bold;
-      letter-spacing: 1px;
-      color: rgba(255,255,255,0.95);
-      font-family: 'Helvetica Neue', Arial, sans-serif;
-      border-right: 1px solid rgba(255,255,255,0.3);
-      padding-right: 12px;
-      line-height: 1;
+    .header-banner {
+      height: 32px;
+      width: auto;
+      flex-shrink: 0;
+    }
+
+    .header-divider {
+      width: 1px;
+      height: 24px;
+      background: rgba(255,255,255,0.3);
+      flex-shrink: 0;
     }
 
     .header h1 {
-      font-size: 16px;
-      font-weight: 500;
-      letter-spacing: 0.5px;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: 1px;
       color: rgba(255,255,255,0.95);
+      white-space: nowrap;
     }
     
     .header-actions {
@@ -656,7 +660,8 @@
   <!-- ヘッダー -->
   <header class="header">
     <div class="header-brand">
-      <span class="header-logo-mark">JRSE</span>
+      <svg class="header-banner" viewBox="0 0 800 100" xmlns="http://www.w3.org/2000/svg"><text x="20" y="55" font-family="'Helvetica Neue',Arial,sans-serif" font-size="64" font-weight="bold" fill="white" dominant-baseline="middle">JRSE</text><text x="140" y="40" font-family="'Helvetica Neue',Arial,sans-serif" font-size="28" fill="rgba(255,255,255,0.9)" dominant-baseline="middle">株式会社</text><text x="140" y="75" font-family="'Helvetica Neue',Arial,sans-serif" font-size="32" font-weight="bold" fill="white" dominant-baseline="middle">ジェイアール総研エンジニアリング</text></svg>
+      <span class="header-divider"></span>
       <h1>SlopeKarte</h1>
     </div>
     <div class="header-actions" id="header-actions" style="display: none;">
