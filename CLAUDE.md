@@ -1,7 +1,8 @@
-# 斜面カルテDX
+# SlopeKarte
 
 ## プロジェクト概要
 鉄道斜面点検用のExcelフォーム（斜面カルテ）を現場で編集できるPWAアプリ。
+Railway slope inspection & disaster prevention.
 現場で写真撮影・コメント入力し、そのままExcelに保存できることが最大の価値。
 
 ### 対象プラットフォーム

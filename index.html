@@ -5,13 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="斜面カルテ">
-  <meta name="theme-color" content="#667eea">
+  <meta name="apple-mobile-web-app-title" content="SlopeKarte">
+  <meta name="theme-color" content="#007934">
   
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon-192.png">
   
-  <title>斜面カルテ DX</title>
+  <title>SlopeKarte</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx-populate@1.21.0/browser/xlsx-populate.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
@@ -25,7 +25,7 @@
     
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Hiragino Sans', sans-serif;
-      background: #1a1a2e;
+      background: #0f1a14;
       color: #eee;
       min-height: 100vh;
       min-height: -webkit-fill-available;
@@ -37,7 +37,7 @@
     }
     
     .header {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #007934 0%, #005a27 100%);
       padding: 12px 16px;
       padding-top: calc(12px + env(safe-area-inset-top));
       display: flex;
@@ -47,10 +47,18 @@
       top: 0;
       z-index: 100;
     }
-    
+
     .header h1 {
       font-size: 17px;
       font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .header-logo {
+      height: 22px;
+      opacity: 0.9;
     }
     
     .header-actions {
@@ -76,7 +84,7 @@
     }
     
     .btn-primary {
-      background: #4CAF50;
+      background: #00a550;
     }
     
     .container {
@@ -98,10 +106,10 @@
     }
     
     .file-drop-zone {
-      border: 3px dashed #667eea;
+      border: 3px dashed #00a550;
       border-radius: 20px;
       padding: 50px 30px;
-      background: rgba(102, 126, 234, 0.1);
+      background: rgba(0, 165, 80, 0.1);
       cursor: pointer;
       transition: all 0.3s;
       max-width: 400px;
@@ -109,7 +117,7 @@
     }
     
     .file-drop-zone:active {
-      background: rgba(102, 126, 234, 0.2);
+      background: rgba(0, 165, 80, 0.2);
       transform: scale(0.98);
     }
     
@@ -165,7 +173,7 @@
     }
     
     .sheet-tab.active {
-      background: #667eea;
+      background: #00a550;
       color: white;
     }
     
@@ -183,14 +191,14 @@
     }
     
     .photo-card {
-      background: #2a2a4a;
+      background: #1a2b20;
       border-radius: 12px;
       overflow: hidden;
       transition: all 0.2s;
     }
     
     .photo-card.is-dummy {
-      border: 2px dashed #667eea;
+      border: 2px dashed #00a550;
       opacity: 0.8;
     }
     
@@ -200,7 +208,7 @@
     
     .photo-frame {
       aspect-ratio: 4/3;
-      background: #1a1a2e;
+      background: #0f1a14;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -244,7 +252,7 @@
     }
     
     .photo-label.dummy {
-      background: #667eea;
+      background: #00a550;
     }
     
     .photo-info {
@@ -253,13 +261,13 @@
     
     .photo-info h3 {
       font-size: 13px;
-      color: #667eea;
+      color: #00a550;
       margin-bottom: 6px;
     }
     
     .comment-input {
       width: 100%;
-      background: #1a1a2e;
+      background: #0f1a14;
       border: 1px solid #444;
       border-radius: 8px;
       color: #eee;
@@ -273,7 +281,7 @@
     
     .comment-input:focus {
       outline: none;
-      border-color: #667eea;
+      border-color: #00a550;
     }
     
     .comment-input::placeholder {
@@ -302,7 +310,7 @@
       bottom: 0;
       left: 0;
       right: 0;
-      background: #2a2a4a;
+      background: #1a2b20;
       border-radius: 16px 16px 0 0;
       padding: 20px;
       padding-bottom: calc(20px + env(safe-area-inset-bottom));
@@ -324,7 +332,7 @@
       width: 100%;
       padding: 16px;
       border: none;
-      background: #3a3a5a;
+      background: #243d2c;
       color: #fff;
       font-size: 16px;
       border-radius: 12px;
@@ -337,7 +345,7 @@
     }
     
     .action-btn:active {
-      background: #4a4a6a;
+      background: #2f5038;
     }
     
     .action-btn-cancel {
@@ -351,7 +359,7 @@
       bottom: 0;
       left: 0;
       right: 0;
-      background: #2a2a4a;
+      background: #1a2b20;
       padding: 10px 16px;
       padding-bottom: calc(10px + env(safe-area-inset-bottom));
       display: none;
@@ -365,7 +373,7 @@
     }
     
     .status-bar .status {
-      color: #4CAF50;
+      color: #00a550;
     }
     
     .status-bar .info {
@@ -396,7 +404,7 @@
       width: 44px;
       height: 44px;
       border: 4px solid #333;
-      border-top-color: #667eea;
+      border-top-color: #00a550;
       border-radius: 50%;
       animation: spin 1s linear infinite;
     }
@@ -420,7 +428,7 @@
     
     /* 現在のファイル情報 */
     .current-file {
-      background: #2a2a4a;
+      background: #1a2b20;
       border-radius: 12px;
       padding: 12px 16px;
       margin-bottom: 16px;
@@ -470,7 +478,7 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: #1a1a2e;
+      background: #0f1a14;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -522,13 +530,13 @@
       width: 16px;
       height: 16px;
       border-radius: 50%;
-      border: 2px solid #667eea;
+      border: 2px solid #00a550;
       background: transparent;
       transition: all 0.15s;
     }
 
     .pin-dot.filled {
-      background: #667eea;
+      background: #00a550;
       transform: scale(1.1);
     }
 
@@ -572,7 +580,7 @@
     }
 
     .pin-key:active {
-      background: rgba(102, 126, 234, 0.4);
+      background: rgba(0, 165, 80, 0.4);
       transform: scale(0.95);
     }
 
@@ -589,7 +597,7 @@
 
     .pin-reset {
       margin-top: 32px;
-      color: #667eea;
+      color: #00a550;
       font-size: 13px;
       background: none;
       border: none;
@@ -635,7 +643,7 @@
 
   <!-- ヘッダー -->
   <header class="header">
-    <h1>📋 斜面カルテ DX</h1>
+    <h1><svg class="header-logo" viewBox="0 0 120 40" fill="white"><text x="0" y="28" font-size="26" font-weight="bold" font-family="Arial, sans-serif">JRSE</text></svg> SlopeKarte</h1>
     <div class="header-actions" id="header-actions" style="display: none;">
       <button class="btn" onclick="closeFile()">閉じる</button>
       <button class="btn btn-primary" onclick="saveFile()">🔒 保存</button>
@@ -650,7 +658,7 @@
     <div class="file-select" id="file-select">
       <div class="file-drop-zone" id="drop-zone">
         <div class="file-icon">📁</div>
-        <h2>斜面カルテを開く</h2>
+        <h2>Karteを開く</h2>
         <p>タップしてファイルを選択<br>(OneDrive / iCloud / ローカル)</p>
         <input type="file" id="file-input" accept=".xlsx,.xls">
       </div>

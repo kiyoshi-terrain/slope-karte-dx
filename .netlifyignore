@@ -1,0 +1,33 @@
+# Excel files (sensitive data)
+*.xlsx
+*.pdf
+
+# Node
+node_modules/
+package-lock.json
+package.json
+
+# Test files
+_test_*
+test_*
+
+# PC-side scripts
+encrypt-excel.js
+
+# Archives
+*.zip
+
+# Old prototypes
+slope-karte-pwa/
+slope_karte_dx_proto*.html
+
+# Project docs (not needed on site)
+CLAUDE.md
+
+# OS
+.DS_Store
+
+# Git / Claude
+.git/
+.claude/
+.gitignore

@@ -18,3 +18,9 @@ slope_karte_dx_proto*.html
 
 # OS
 .DS_Store
+
+# Local Netlify folder
+.netlify
+
+# Deploy folder (auto-generated)
+deploy/
