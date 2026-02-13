@@ -46,6 +46,8 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
       position: sticky;
       top: 0;
       z-index: 100;
@@ -57,6 +59,7 @@
       display: flex;
       align-items: center;
       gap: 10px;
+      flex: 1 1 auto;
       min-width: 0;
     }
 
@@ -83,7 +86,8 @@
     
     .header-actions {
       display: flex;
-      gap: 8px;
+      gap: 6px;
+      flex-wrap: wrap;
     }
     
     .btn {
@@ -224,6 +228,23 @@
     @media (max-width: 600px) {
       .photo-grid {
         grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .header {
+        padding: 8px 12px;
+        padding-top: calc(8px + env(safe-area-inset-top));
+      }
+      .header-actions .btn {
+        padding: 6px 10px;
+        font-size: 12px;
+      }
+      .header h1 {
+        font-size: 13px;
+      }
+      .header-logo {
+        height: 26px;
       }
     }
     
